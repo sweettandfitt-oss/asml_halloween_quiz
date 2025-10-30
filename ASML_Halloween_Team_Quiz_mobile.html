@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASML Halloween Team Quiz 🎃</title>
+<style>
+html, body {
+margin: 0; padding: 0;
+width: 100%; height: 100%;
+overflow-x: hidden;
+background: #000;
+color: #ffa726;
+font-family: 'Trebuchet MS', sans-serif;
+text-align: center;
+}
+canvas {
+position: fixed;
+top: 0; left: 0;
+width: 100%; height: 100%;
+z-index: -1;
+}
+.screen {
+display: none;
+padding: 20px;
+}
+#startScreen { display: block; }
+h1 {
+color: #ff9800;
+text-shadow: 0 0 15px #ff6f00;
+font-size: clamp(1.5em, 5vw, 2.5em);
+}
+button {
+background-color: #ff6f00;
+color: #000;
+border: none;
+padding: 14px 28px;
+border-radius: 8px;
+font-size: 1em;
+cursor: pointer;
+margin-top: 20px;
+width: 80%;
+max-width: 300px;
+box-shadow: 0 0 10px #ff8f00;
+}
+button:hover { background-color: #ffa726; }
+.question {
+margin: 20px auto;
+padding: 15px;
+border: 2px solid #ff8f00;
+border-radius: 10px;
+background-color: rgba(25, 25, 25, 0.85);
+max-width: 90%;
+}
+label {
+display: block;
+text-align: left;
+margin: 6px 0;
+font-size: 1em;
+}
+input[type="radio"] { transform: scale(1.3); margin-right: 8px; }
+.result {
+font-size: 1.2em;
+color: #ffca28;
+margin-top: 30px;
+}
+footer {
+color: #ffcc80;
+font-size: 0.9em;
+margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div id="startScreen" class="screen">
+<h1>🎃 ASML Halloween Team Quiz 🎃</h1>
+<p>Welcome to the <strong>Haunted Cleanroom</strong>... dare to enter?</p>
+<button onclick="startQuiz()">Enter the Haunted Cleanroom</button>
+</div>
+
+<div id="quizScreen" class="screen">
+<h1>ASML Halloween Quiz</h1>
+<div id="quiz"></div>
+<button id="submitBtn">Submit Answers</button>
+</div>
+
+<div id="resultScreen" class="screen">
+<h1>🎃 Your Results 🎃</h1>
+<div id="result" class="result"></div>
+</div>
+
+<footer>Created by Deniz Ince</footer>
+
+<script>
+// 🎇 Particle background
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+let particles = [];
+
+function resize() {
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+for (let i = 0; i < 50; i++) {
+particles.push({
+x: Math.random() * canvas.width,
+y: Math.random() * canvas.height,
+r: Math.random() * 2 + 1,
+dx: (Math.random() - 0.5) * 0.5,
+dy: (Math.random() - 0.5) * 0.5
+});
+}
+
+function drawParticles() {
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = "rgba(255,140,0,0.8)";
+for (let p of particles) {
+ctx.beginPath();
+ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+ctx.fill();
+p.x += p.dx;
+p.y += p.dy;
+if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+}
+requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// Quiz logic
+const quizData = [
+{ q: "Where does Halloween originally come from?", options: ["The U.S.", "Ireland", "Transylvania", "Germany"], answer: "Ireland" },
+{ q: "What’s the fear of ghosts called?", options: ["Phasmophobia", "Spectrophobia", "Necrophobia", "Boo-phobia"], answer: "Phasmophobia" },
+{ q: "Which famous Halloween symbol was originally carved from turnips?", options: ["Pumpkin", "Apple", "Potato", "Beetroot"], answer: "Pumpkin" },
+{ q: "In which decade did ASML first open its doors?", options: ["1970s", "1980s", "1990s", "2000s"], answer: "1980s" },
+{ q: "Which element best represents ASML in Halloween terms?", options: ["Frankenstein’s Lab (innovation)", "Dracula’s Castle (mystery)", "Witch’s Brew (collaboration)", "Ghost Town (silence before tape-out)"], answer: "Witch’s Brew (collaboration)" },
+{ q: "Which movie features the line 'We all float down here'?", options: ["The Shining", "IT", "Scream", "Poltergeist"], answer: "IT" },
+{ q: "Who is the friendly ghost loved by children?", options: ["Boo", "Casper", "Moaning Myrtle", "Spook"], answer: "Casper" },
+{ q: "Which classic monster movie inspired the name 'Frankenstein wafer' at ASML’s cleanroom jokes?", options: ["Frankenstein", "Dracula", "The Mummy", "The Blob"], answer: "Frankenstein" },
+{ q: "In which series would you find Eleven and Demogorgon?", options: ["The X-Files", "Stranger Things", "Wednesday", "Buffy the Vampire Slayer"], answer: "Stranger Things" },
+{ q: "Which spooky song starts with 'It’s close to midnight, and something evil’s lurking in the dark'?", options: ["Monster Mash", "Ghostbusters", "Thriller", "Somebody’s Watching Me"], answer: "Thriller" },
+{ q: "If the EUV machine were a Halloween monster, which would it be?", options: ["Dracula – powerful but light-sensitive", "Frankenstein – built from genius parts", "Werewolf – unstoppable under full moon", "Ghost – invisible yet everywhere"], answer: "Dracula – powerful but light-sensitive" },
+{ q: "What’s the scariest phrase an engineer can hear?", options: ["Let’s push this to production.", "There’s a TRC tomorrow.", "We lost the DIABOM update.", "Can we discuss this offline?"], answer: "We lost the DIABOM update." },
+{ q: "What’s the most haunted place in Veldhoven?", options: ["The old cleanroom", "The coffee machine after 5 PM", "The safety audit room", "The parking garage at midnight"], answer: "The coffee machine after 5 PM" }
+];
+
+function startQuiz() {
+document.getElementById("startScreen").style.display = "none";
+document.getElementById("quizScreen").style.display = "block";
+
+const quizContainer = document.getElementById("quiz");
+quizData.forEach((item, index) => {
+const qDiv = document.createElement("div");
+qDiv.classList.add("question");
+qDiv.innerHTML = `<h3>${index + 1}. ${item.q}</h3>` +
+item.options.map(opt => `<label><input type='radio' name='q${index}' value='${opt}'> ${opt}</label>`).join('');
+quizContainer.appendChild(qDiv);
+});
+
+document.getElementById("submitBtn").addEventListener("click", showResult);
+}
+
+function showResult() {
+let score = 0;
+quizData.forEach((item, index) => {
+const selected = document.querySelector(`input[name='q${index}']:checked`);
+if (selected && selected.value === item.answer) score++;
+});
+
+let rank = "";
+if (score <= 5) rank = "🎃 Pumpkin Apprentice";
+else if (score <= 10) rank = "🧙‍♀️ Witch-level Wizard";
+else rank = "💀 Master of the Haunted Fab";
+
+document.getElementById("quizScreen").style.display = "none";
+const resultDiv = document.getElementById("result");
+resultDiv.innerHTML = `<p>You scored <strong>${score}</strong> / 13</p>
+<p>Your spooky rank: <strong>${rank}</strong></p>
+<p>💀 Thanks for playing, brave soul!<br>
+You survived the Haunted Cleanroom of ASML… for now.<br>
+🎃 Happy Halloween from the Tooling Team!</p>`;
+
+document.getElementById("resultScreen").style.display = "block";
+}
+</script>
+
+</body>
+</html>
